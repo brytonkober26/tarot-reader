@@ -30,6 +30,18 @@ const SPREADS = {
       'Outcome'
     ],
   },
+  horseshoe: {
+    label: 'Horseshoe (7)',
+    positions: [
+      'Recent Past',
+      'Present',
+      'Near Future',
+      'Questions / Goals',
+      'Your Perspective',
+      'Other's Perspective',
+      'Outcome'
+    ],
+  },
 };
 
 // --- Section loader (like Shopify sections) ---
