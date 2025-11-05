@@ -1,9 +1,10 @@
+// app.js
 import { DECK } from './tarotDeck.js';
 
 let LAST_DRAW = null; // { question, spreadKey, spreadLabel, positions, cards:[{id,name,img,orientation,position}] }
 
 /**
- * Minimal spreads. Add more if you like.
+ * Spreads (add more if you like)
  */
 const SPREADS = {
   single: {
@@ -38,7 +39,7 @@ async function loadSections() {
     'question',
     'controls',
     'reading',
-    'interpretation', // <-- include interpretation
+    'interpretation',
     'footer'
   ];
 
@@ -54,6 +55,7 @@ async function loadSections() {
 
 /** Cryptographically-strong random integer in [0, max) */
 function cryptoRandInt(max) {
+  if (!Number.isInteger(max) || max <= 0) throw new Error('cryptoRandInt: invalid max');
   const arr = new Uint32Array(1);
   let x;
   do {
@@ -82,16 +84,23 @@ function drawUnique(deck, count) {
 
 /** 50/50 orientation */
 function randomOrientation() {
-  const bit = cryptoRandInt(2);
-  return bit === 1 ? 'reversed' : 'upright';
+  return cryptoRandInt(2) === 1 ? 'reversed' : 'upright';
 }
 
 /** Render a reading into #readingGrid */
 function renderReading({ cards, positions }) {
   const grid = document.getElementById('readingGrid');
+  if (!grid) {
+    console.error('readingGrid not found');
+    return;
+  }
   grid.innerHTML = '';
 
   const tpl = document.getElementById('card-template');
+  if (!tpl) {
+    console.error('card-template not found');
+    return;
+  }
 
   cards.forEach((card, idx) => {
     const clone = tpl.content.cloneNode(true);
@@ -105,8 +114,10 @@ function renderReading({ cards, positions }) {
     if (posEl) posEl.textContent = positions[idx] || `Card ${idx + 1}`;
     if (titleEl) titleEl.textContent = card.name;
 
-    img.src = card.img;
-    img.alt = card.name;
+    if (img) {
+      img.src = card.img;
+      img.alt = card.name;
+    }
 
     grid.appendChild(clone);
   });
@@ -158,6 +169,8 @@ function initUI() {
         cards: drawn.map(({ id, name, img, orientation, position }) => ({ id, name, img, orientation, position }))
       };
 
+      console.log('LAST_DRAW payload:', LAST_DRAW); // helpful for debugging
+
       const qOut = document.getElementById('questionEcho');
       if (qOut) qOut.textContent = question ? `Q: ${question}` : '';
     } catch (err) {
@@ -168,12 +181,15 @@ function initUI() {
   });
 }
 
-/** Wire up the Interpretation button (calls your Node proxy) */
+/** Wire up the Interpretation button (calls /api/interpret) */
 function initInterpretation() {
   const btn = document.getElementById('interpretBtn');
   const out = document.getElementById('interpretOut');
   const status = document.getElementById('interpretStatus');
-  if (!btn) return;
+  if (!btn) {
+    console.warn('interpretBtn not found (maybe interpretation section not loaded yet).');
+    return;
+  }
 
   btn.addEventListener('click', async () => {
     if (!LAST_DRAW || !LAST_DRAW.cards?.length) {
@@ -190,13 +206,31 @@ function initInterpretation() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(LAST_DRAW)
       });
-      if (!res.ok) throw new Error(`Server error: ${res.status}`);
-      const data = await res.json();
-      if (out) out.value = data.text || '(No response)';
+
+      // Try to parse JSON even on non-200
+      let data = {};
+      try { data = await res.json(); } catch (_) { /* ignore */ }
+
+      if (!res.ok) {
+        if (out) out.value = `⚠️ Server error ${res.status}: ${data?.error || 'Unknown error'}`;
+        if (status) status.textContent = 'Error';
+        return;
+      }
+
+      if (data?.error) {
+        if (out) out.value = `⚠️ ${data.error}`;
+        if (status) status.textContent = 'Error';
+        return;
+      }
+
+      const text = data?.text;
+      if (out) out.value = (typeof text === 'string' && text.trim().length > 0)
+        ? text
+        : '⚠️ Empty response from API.';
       if (status) status.textContent = 'Done';
     } catch (e) {
+      if (out) out.value = `⚠️ ${e.message || String(e)}`;
       if (status) status.textContent = 'Error';
-      if (out) out.value = `⚠️ ${e.message}`;
     } finally {
       btn.disabled = false;
       setTimeout(() => { if (status) status.textContent = ''; }, 1500);
@@ -206,7 +240,11 @@ function initInterpretation() {
 
 // Boot
 (async function main(){
-  await loadSections();    // injects the HTML sections
-  initUI();                // now the DOM elements exist
-  initInterpretation();    // wire the interpretation controls
+  try {
+    await loadSections();    // injects the HTML sections
+    initUI();                // now the DOM elements exist
+    initInterpretation();    // wire the interpretation controls
+  } catch (e) {
+    console.error('Boot error:', e);
+  }
 })();
