@@ -38,7 +38,7 @@ const SPREADS = {
       'Near Future',
       'Questions / Goals',
       'Your Perspective',
-      'Other's Perspective',
+      'Others Perspective',
       'Outcome'
     ],
   },
