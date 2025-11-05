@@ -1,68 +1,78 @@
+/* ===== Tarot Reader — Complete CSS ===== */
 :root{
   --bg:#f7f5f1;
   --ink:#2a2a2a;
   --accent:#a855f7;
   --muted:#7a7a7a;
   --card-w: 220px;
-  --card-ratio: 2/3; /* consistent visual size for all images */
+  --card-ratio: 2/3; /* classic tarot ratio */
 }
 
-*{ box-sizing:border-box; }
+* { box-sizing: border-box; }
 
-html,body{
-  margin:0;
-  padding:0;
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-  color:var(--ink);
-  background:var(--bg);
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.app{
+.app {
   max-width: 1100px;
   margin: 0 auto;
   padding: 24px;
 }
 
-/* Simple layout sections */
+h1, h2 {
+  margin: 0 0 12px;
+  color: var(--accent);
+  text-align: center;
+  line-height: 1.2;
+}
+
 .section{
-  background: white;
+  background: #fff;
   border-radius: 16px;
   padding: 16px 18px;
   margin: 14px 0;
   box-shadow: 0 8px 24px rgba(0,0,0,.06);
 }
 
-/* Question input */
+/* Question row */
 .inputRow{
   display:flex;
   gap:12px;
   flex-wrap:wrap;
 }
-
 .inputRow input[type="text"]{
   flex:1 1 360px;
   padding:12px 14px;
   border:1px solid #ddd;
   border-radius:12px;
   font-size:16px;
+  background: #fff;
 }
 
-/* Controls (spread + button) */
+/* Controls */
 .controls{
   display:flex;
   gap:12px;
   align-items:center;
   flex-wrap:wrap;
+  justify-content:center;
 }
-
 select{
   padding:10px 12px;
   border-radius:12px;
   border:1px solid #ddd;
   font-size:16px;
-  background:white;
+  background:#fff;
 }
 
+/* “Glass” draw/interpret buttons */
 button.draw{
   padding:12px 18px;
   border:none;
@@ -77,17 +87,21 @@ button.draw{
   box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 8px 20px rgba(0,0,0,.12);
   color:#222;
   cursor:pointer;
-  transition: transform .05s ease, box-shadow .2s ease;
+  transition: transform .05s ease, box-shadow .2s ease, opacity .15s ease;
 }
+button.draw:hover { opacity:.95; }
 button.draw:active{ transform: translateY(1px); }
+button.draw:disabled{ opacity:.6; cursor:not-allowed; }
 
 /* Reading grid */
 .readingGrid{
   display:grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--card-w), 1fr));
   gap:16px;
+  align-items:start;
 }
 
+/* Card layout */
 .card{
   background: #fff;
   border-radius: 16px;
@@ -100,55 +114,10 @@ button.draw:active{ transform: translateY(1px); }
 .card__imgWrap{
   position:relative;
   width:100%;
-  aspect-ratio: var(--card-ratio); /* all images look identical in size */
+  aspect-ratio: var(--card-ratio);   /* fixed visual frame */
   overflow:hidden;
+  background:#f2f2f2;                /* behind letterbox bars */
 }
 
 .card__img{
-  width:100%;
-  height:100%;
-  object-fit: contain;     /* keeps identical visual size; can crop if aspect differs */
-  object-position: center;
-  display:block;
-  transition: transform .25s ease;
-}
-
-.card.reversed .card__img{
-  transform: rotate(180deg);
-}
-
-/*
-.card__flipBadge{
-  position:absolute;
-  right:8px;
-  top:8px;
-  padding:6px 8px;
-  font-size:12px;
-  background: rgba(0,0,0,.6);
-  color:#fff;
-  border-radius: 999px;
-}
-.card:not(.reversed) .card__flipBadge::after{ content: "Upright"; }
-.card.reversed .card__flipBadge::after{ content: "Reversed"; }
-*/
-
-.card__meta{
-  padding:10px 12px 14px;
-  display:grid;
-  gap:4px;
-}
-.card__position{
-  font-size:12px;
-  color:var(--muted);
-}
-.card__title{
-  font-weight:700;
-}
-/*
-.card__orientation{
-  font-size:12px;
-  color:var(--muted);
-}
-*/
-/* Helper (muted note) */
-.muted{ color:var(--muted); font-size: 14px; }
+  widt
